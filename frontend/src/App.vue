@@ -6,12 +6,18 @@
       @created="loadTasks"
       @updated="loadTasks"
     />
-    <TaskList :tasks="tasks" @edit="setEditingTask" />
+    <TaskList :tasks="tasks" @edit="setEditingTask" @deleted="loadTasks" />
+
     <select v-model="filterStatus" @change="loadTasks">
       <option value="">Все</option>
       <option value="true">Выполненные</option>
       <option value="false">Невыполненные</option>
     </select>
+
+    <div class="pagination">
+      <button @click="changePage(prev)" :disabled="!prev">Назад</button>
+      <button @click="changePage(next)" :disabled="!next">Вперёд</button>
+    </div>
   </div>
 </template>
 
@@ -24,15 +30,36 @@ import TaskList from './components/TaskList.vue'
 const tasks = ref([])
 const editingTask = ref(null)
 const filterStatus = ref('')
+const next = ref(null)
+const prev = ref(null)
 
 const loadTasks = async () => {
-  let url = 'http://localhost:8000/api/tasks/'
-  if (filterStatus.value !== '') {
-    url += `?is_completed=${filterStatus.value}`
+  try {
+    const params = new URLSearchParams()
+    if (filterStatus.value !== '') {
+      params.append('is_completed', filterStatus.value)
+    }
+
+    const res = await axios.get(`http://localhost:8000/api/tasks/?${params.toString()}`)
+    tasks.value = res.data.results
+    next.value = res.data.next
+    prev.value = res.data.previous
+    editingTask.value = null
+  } catch (err) {
+    console.error('Ошибка при загрузке задач:', err)
   }
-  const res = await axios.get(url)
-  tasks.value = res.data
-  editingTask.value = null
+}
+
+const changePage = async (url) => {
+  if (!url) return
+  try {
+    const res = await axios.get(url)
+    tasks.value = res.data.results
+    next.value = res.data.next
+    prev.value = res.data.previous
+  } catch (err) {
+    console.error('Ошибка при переключении страницы:', err)
+  }
 }
 
 const setEditingTask = (task) => {
@@ -40,14 +67,4 @@ const setEditingTask = (task) => {
 }
 
 onMounted(loadTasks)
-
 </script>
-
-
-<style>
-.container {
-  max-width: 600px;
-  margin: 2rem auto;
-  font-family: sans-serif;
-}
-</style>
