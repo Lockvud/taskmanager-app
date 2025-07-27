@@ -1,5 +1,5 @@
 <template>
-    <ul class="task-list">
+  <ul class="task-list">
     <li v-for="task in tasks" :key="task.id" class="task-item">
       <h3>{{ task.title }}</h3>
       <p>{{ task.description }}</p>
@@ -9,10 +9,16 @@
   </ul>
 </template>
 
-
 <script setup>
 import axios from 'axios'
-const props = defineProps({ tasks: Array })
+
+defineProps({
+  tasks: {
+    type: Array,
+    required: true,
+  }
+})
+
 const emit = defineEmits(['deleted'])
 
 const deleteTask = async (id) => {
@@ -21,12 +27,6 @@ const deleteTask = async (id) => {
     emit('deleted')
   }
 }
-defineProps({
-  tasks: {
-    type: Array,
-    required: true,
-  }
-})
 </script>
 
 <style scoped>
