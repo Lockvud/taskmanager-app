@@ -2,29 +2,42 @@ version: "3.9"
 
 services:
   web:
-    build: .
+    build:
+      context: ./backend      # ← контекст — папка backend
+      dockerfile: Dockerfile  # ← Dockerfile внутри папки backend
     working_dir: /code
-    command: python manage.py runserver 0.0.0.0:8000
+    command: ./wait-for-it.sh db:5432 -- python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
     volumes:
-      - .:/code
+      - ./backend:/code
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - PYTHONPATH=/code
+      - DJANGO_SETTINGS_MODULE=settings
     depends_on:
       - db
+
+  frontend:
+    build:
+      context: ./frontend
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app:cached
+    environment:
+      - NODE_ENV=development
 
   db:
     image: postgres:15
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - ./backend/.env
     ports:
       - "5432:5432"
 
