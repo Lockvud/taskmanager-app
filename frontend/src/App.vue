@@ -7,6 +7,11 @@
       @updated="loadTasks"
     />
     <TaskList :tasks="tasks" @edit="setEditingTask" />
+    <select v-model="filterStatus" @change="loadTasks">
+      <option value="">Все</option>
+      <option value="true">Выполненные</option>
+      <option value="false">Невыполненные</option>
+    </select>
   </div>
 </template>
 
@@ -18,9 +23,14 @@ import TaskList from './components/TaskList.vue'
 
 const tasks = ref([])
 const editingTask = ref(null)
+const filterStatus = ref('')
 
 const loadTasks = async () => {
-  const res = await axios.get('http://localhost:8000/api/tasks/')
+  let url = 'http://localhost:8000/api/tasks/'
+  if (filterStatus.value !== '') {
+    url += `?is_completed=${filterStatus.value}`
+  }
+  const res = await axios.get(url)
   tasks.value = res.data
   editingTask.value = null
 }
@@ -30,6 +40,7 @@ const setEditingTask = (task) => {
 }
 
 onMounted(loadTasks)
+
 </script>
 
 
