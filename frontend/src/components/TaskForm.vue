@@ -1,8 +1,31 @@
 <template>
-  <form @submit.prevent="submitForm" class="task-form">
-    <input v-model="title" placeholder="Название задачи" required />
-    <textarea v-model="description" placeholder="Описание задачи"></textarea>
-    <button type="submit">Создать задачу</button>
+  <form class="task-form" @submit.prevent="handleSubmit">
+    <div>
+      <label>Название</label>
+      <input
+        v-model="form.title"
+        type="text"
+        required
+      />
+    </div>
+
+    <div>
+      <label>Описание</label>
+      <textarea
+        v-model="form.description"
+        rows="4"
+      ></textarea>
+    </div>
+
+      <label class="checkbox-label">
+      <input v-model="form.is_completed" type="checkbox" />
+      Выполнено
+    </label>
+    
+
+    <button type="submit">
+      {{ editingTask ? 'Сохранить' : 'Создать' }}
+    </button>
   </form>
 </template>
 
@@ -11,43 +34,39 @@ import { ref, watch } from 'vue'
 import axios from 'axios'
 
 const emit = defineEmits(['created', 'updated'])
-const props = defineProps({
-  editingTask: Object,
-})
+const props = defineProps({ editingTask: Object })
 
-const title = ref('')
-const description = ref('')
-const isEditing = ref(false)
-
-watch(() => props.editingTask, (newTask) => {
-  if (newTask) {
-    title.value = newTask.title
-    description.value = newTask.description
-    isEditing.value = true
-  } else {
-    resetForm()
-  }
+const form = ref({
+  title: props.editingTask?.title || '',
+  description: props.editingTask?.description || '',
+  is_completed: props.editingTask?.is_completed || false,
 })
 
 const resetForm = () => {
-  title.value = ''
-  description.value = ''
-  isEditing.value = false
+  form.value = { title: '', description: '', is_completed: false }
 }
 
-const submitForm = async () => {
+watch(
+  () => props.editingTask,
+  (newTask) => {
+    if (newTask) {
+      form.value.title = newTask.title
+      form.value.description = newTask.description
+      form.value.is_completed = newTask.is_completed
+    } else {
+      resetForm()
+    }
+  },
+  { immediate: true }
+)
+
+const handleSubmit = async () => {
   try {
-    if (isEditing.value && props.editingTask?.id) {
-      await axios.put(`http://localhost:8000/api/tasks/${props.editingTask.id}/`, {
-        title: title.value,
-        description: description.value,
-      })
+    if (props.editingTask?.id) {
+      await axios.put(`http://localhost:8000/api/tasks/${props.editingTask.id}/`, form.value)
       emit('updated')
     } else {
-      await axios.post('http://localhost:8000/api/tasks/', {
-        title: title.value,
-        description: description.value,
-      })
+      await axios.post('http://localhost:8000/api/tasks/', form.value)
       emit('created')
     }
     resetForm()
@@ -56,27 +75,3 @@ const submitForm = async () => {
   }
 }
 </script>
-
-
-<style scoped>
-.task-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-input, textarea {
-  padding: 0.5rem;
-  font-size: 1rem;
-  width: 100%;
-}
-
-button {
-  padding: 0.5rem;
-  background: #42b983;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-</style>

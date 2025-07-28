@@ -1,32 +1,3 @@
-<template>
-  <h1>Список задач</h1>
-  <div class="container">
-    <TaskForm
-      :editingTask="editingTask"
-      @created="loadTasks"
-      @updated="loadTasks"
-    />
-    <TaskList :tasks="tasks" @edit="setEditingTask" @deleted="loadTasks" />
-
-    <select v-model="filterStatus" @change="loadTasks">
-      <option value="">Все</option>
-      <option value="true">Выполненные</option>
-      <option value="false">Невыполненные</option>
-    </select>
-
-    <select v-model="ordering" @change="loadTasks">
-      <option disabled value="">Сортировка</option>
-      <option value="created_at">По дате (старые)</option>
-      <option value="-created_at">По дате (новые)</option>
-   </select>
-
-    <div class="pagination">
-      <button @click="changePage(prev)" :disabled="!prev">Назад</button>
-      <button @click="changePage(next)" :disabled="!next">Вперёд</button>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
@@ -60,7 +31,6 @@ const loadTasks = async () => {
   }
 }
 
-
 const changePage = async (url) => {
   if (!url) return
   try {
@@ -79,3 +49,45 @@ const setEditingTask = (task) => {
 
 onMounted(loadTasks)
 </script>
+
+<template>
+  <div class="app-container">
+    <h1 class="app-title">Список задач</h1>
+
+    <TaskForm
+      :editingTask="editingTask"
+      @created="loadTasks"
+      @updated="loadTasks"
+    />
+
+    <TaskList
+      :tasks="tasks"
+      @edit="setEditingTask"
+      @deleted="loadTasks"
+      @updated="loadTasks"
+    />
+
+    <div class="controls">
+      <select v-model="filterStatus" @change="loadTasks" class="select-filter">
+        <option value="">Все</option>
+        <option value="true">Выполненные</option>
+        <option value="false">Невыполненные</option>
+      </select>
+
+      <select v-model="ordering" @change="loadTasks" class="select-filter">
+        <option disabled value="">Сортировка</option>
+        <option value="created_at">По дате (старые)</option>
+        <option value="-created_at">По дате (новые)</option>
+      </select>
+    </div>
+
+    <div class="pagination">
+      <button @click="changePage(prev)" :disabled="!prev" class="btn" :class="{ disabled: !prev }">
+        Назад
+      </button>
+      <button @click="changePage(next)" :disabled="!next" class="btn" :class="{ disabled: !next }">
+        Вперёд
+      </button>
+    </div>
+  </div>
+</template>

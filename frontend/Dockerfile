@@ -1,3 +1,4 @@
+# frontend/Dockerfile
 FROM node:20.19.0
 
 WORKDIR /app
@@ -9,4 +10,4 @@ COPY . .
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host"]
