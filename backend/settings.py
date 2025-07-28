@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",  # Django REST Framework
     "tasks",
+    "drf_yasg"
 ]
 
 MIDDLEWARE = [
