@@ -11,7 +11,7 @@ Backend: http://localhost:8000
 
 Frontend: http://localhost:5173
 ```
-### 🔧 Установка зависимостей
+### Установка зависимостей
 
 ```bash
 pip install -r requirements.txt
